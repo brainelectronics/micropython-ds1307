@@ -34,7 +34,11 @@ https://en.wikipedia.org/wiki/Binary-coded_decimal
 
 # system packages
 from machine import I2C
-from micropython import const
+try:
+    from micropython import const
+except ImportError:
+    def const(x):
+        return x
 
 
 class _Subscriptable():
@@ -109,8 +113,8 @@ class DS1307(object):
         """
         Get the current datetime
 
-        (2023, 4, 18, 0, 10, 34, 4, 0)
-        y, m, d,
+        (2023, 4, 18, 0, 10, 34, 4, 108)
+        y,     m,  d, h, m,  s, wd, yd
 
         :returns:   (year, month, day, hour, minute, second, weekday, yearday)
         :rtype:     Tuple[int, int, int, int, int, int, int, int]
@@ -240,7 +244,7 @@ class DS1307(object):
         :returns:   Yearday of RTC
         :rtype:     int
         """
-        return self.datetime[6]
+        return self.datetime[7]
 
     def is_leap_year(self, year: int) -> bool:
         """
@@ -275,7 +279,7 @@ class DS1307(object):
         for x in range(1, month):
             days16 += month_days[x - 1]
 
-        if month == 2 and self.is_leap_year(year=year):
+        if month >= 2 and self.is_leap_year(year=year):
             days16 += 1
 
         return days16
