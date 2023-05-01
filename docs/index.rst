@@ -1,4 +1,4 @@
-MicroPython package template
+MicroPython DS1307
 ===================================
 
 Contents
@@ -11,7 +11,7 @@ Contents
    EXAMPLES
    DOCUMENTATION
    CONTRIBUTING
-   be_upy_blink
+   ds1307
    changelog_link
 
 Indices and tables

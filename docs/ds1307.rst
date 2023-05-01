@@ -1,0 +1,13 @@
+API
+=======================
+
+.. autosummary::
+   :toctree: generated
+
+DS1307
+---------------------------------
+
+.. automodule:: ds1307.ds1307
+   :members:
+   :private-members:
+   :show-inheritance:
