@@ -1,22 +1,22 @@
-# MicroPython package template
+# MicroPython DS1307
 
-[![Downloads](https://pepy.tech/badge/micropython-package-template)](https://pepy.tech/project/micropython-package-template)
-![Release](https://img.shields.io/github/v/release/brainelectronics/micropython-package-template?include_prereleases&color=success)
+[![Downloads](https://pepy.tech/badge/micropython-ds1307)](https://pepy.tech/project/micropython-ds1307)
+![Release](https://img.shields.io/github/v/release/brainelectronics/micropython-ds1307?include_prereleases&color=success)
 ![MicroPython](https://img.shields.io/badge/micropython-Ok-green.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/github/brainelectronics/micropython-package-template/branch/main/graph/badge.svg)](https://app.codecov.io/github/brainelectronics/micropython-package-template)
-[![CI](https://github.com/brainelectronics/micropython-package-template/actions/workflows/release.yml/badge.svg)](https://github.com/brainelectronics/micropython-package-template/actions/workflows/release.yml)
+[![codecov](https://codecov.io/github/brainelectronics/micropython-ds1307/branch/main/graph/badge.svg)](https://app.codecov.io/github/brainelectronics/micropython-ds1307)
+[![CI](https://github.com/brainelectronics/micropython-ds1307/actions/workflows/release.yml/badge.svg)](https://github.com/brainelectronics/micropython-ds1307/actions/workflows/release.yml)
 
-MicroPython PyPi package template project with auto deploy
+MicroPython driver for DS1307 RTC
 
 ---------------
 
 ## General
 
-MicroPython PyPi package template with GitHub Action based testing and deploy
+MicroPython driver for DS1307 RTC
 
 📚 The latest documentation is available at
-[MicroPython Package Template ReadTheDocs][ref-rtd-micropython-package-template] 📚
+[MicroPython DS1307 ReadTheDocs][ref-rtd-micropython-ds1307] 📚
 
 <!-- MarkdownTOC -->
 
@@ -30,13 +30,8 @@ MicroPython PyPi package template with GitHub Action based testing and deploy
 	- [Manually](#manually)
 		- [Upload files to board](#upload-files-to-board)
 - [Usage](#usage)
-- [Create a PyPi \(micropython\) package](#create-a-pypi-micropython-package)
-	- [Setup](#setup-1)
-	- [Create a distribution](#create-a-distribution)
-	- [Upload to PyPi](#upload-to-pypi)
 - [Contributing](#contributing)
 	- [Unittests](#unittests)
-- [Steps after using this template](#steps-after-using-this-template)
 - [Credits](#credits)
 
 <!-- /MarkdownTOC -->
@@ -82,14 +77,14 @@ Install the latest package version of this lib on the MicroPython device
 
 ```python
 import mip
-mip.install("github:brainelectronics/micropython-package-template")
+mip.install("github:brainelectronics/micropython-ds1307")
 ```
 
 For MicroPython versions below 1.19.1 use the `upip` package instead of `mip`
 
 ```python
 import upip
-upip.install('micropython-package-template')
+upip.install('micropython-ds1307')
 ```
 
 #### Specific version
@@ -99,16 +94,16 @@ Install a specific, fixed package version of this lib on the MicroPython device
 ```python
 import mip
 # install a verions of a specific branch
-mip.install("github:brainelectronics/micropython-package-template", version="feature/initial-implementation")
+mip.install("github:brainelectronics/micropython-ds1307", version="feature/initial-implementation")
 # install a tag version
-mip.install("github:brainelectronics/micropython-package-template", version="0.6.0")
+mip.install("github:brainelectronics/micropython-ds1307", version="0.1.0")
 ```
 
 For MicroPython versions below 1.19.1 use the `upip` package instead of `mip`
 
 ```python
 import upip
-upip.install('micropython-package-template==0.1.1')
+upip.install('micropython-ds1307')
 ```
 
 #### Test version
@@ -120,7 +115,7 @@ will be used.
 
 ```python
 import mip
-mip.install("github:brainelectronics/micropython-package-template", version="0.6.0-rc9.dev13")
+mip.install("github:brainelectronics/micropython-ds1307", version="0.1.0-rc1.dev1")
 ```
 
 For MicroPython versions below 1.19.1 use the `upip` package instead of `mip`
@@ -129,7 +124,7 @@ For MicroPython versions below 1.19.1 use the `upip` package instead of `mip`
 import upip
 # overwrite index_urls to only take artifacts from test.pypi.org
 upip.index_urls = ['https://test.pypi.org/pypi']
-upip.install('micropython-package-template==0.2.0rc1.dev6')
+upip.install('micropython-ds1307')
 ```
 
 See also [brainelectronics Test PyPi Server in Docker][ref-brainelectronics-test-pypiserver]
@@ -154,9 +149,9 @@ folders to the device
 
 ```bash
 mkdir /pyboard/lib
-mkdir /pyboard/lib/be_upy_blink
+mkdir /pyboard/lib/ds1307
 
-cp be_upy_blink/* /pyboard/lib/be_upy_blink
+cp ds1307/* /pyboard/lib/ds1307
 
 cp examples/main.py /pyboard
 cp examples/boot.py /pyboard
@@ -165,58 +160,31 @@ cp examples/boot.py /pyboard
 ## Usage
 
 ```python
-from be_upy_blink import flash_led
-from machine import Pin
+from eeprom import DS1307
+from machine import I2C, Pin
+from time import gmtime
 
-led_pin = Pin(4, Pin.OUT)
+I2C_ADDR = 0x68
 
-flash_led(pin=led_pin, amount=3)
-# flash_led(pin=led_pin, amount=3, on_time=1, off_time=3)
-```
+# define custom I2C interface, default is 'I2C(0)'
+# check the docs of your device for further details and pin infos
+# this are the pins for the Raspberry Pi Pico adapter board
+i2c = I2C(0, scl=Pin(13), sda=Pin(12), freq=800000)
+ds1307 = DS1307(addr=I2C_ADDR, i2c=i2c)   # DS1307 on 0x68
 
-## Create a PyPi (micropython) package
+# get the current RTC time
+print("Current RTC time: {}".format(ds1307.datetime))
 
-### Setup
+# set the RTC time to the current system time
+now = gmtime(time())
+ds1307.datetime = now
 
-Install the required python package with the following command in a virtual
-environment to avoid any conflicts with other packages installed on your local
-system.
+print("Current RTC time: {}".format(ds1307.datetime))
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip install twine
-```
-
-### Create a distribution
-
-This module overrides distutils (also compatible with setuptools) `sdist`
-command to perform pre- and post-processing as required for MicroPython's
-upip package manager. This script is taken from
-[pfalcon's picoweb][ref-pfalcon-picoweb-sdist-upip] and updated to be PEP8
-conform.
-
-```bash
-python setup.py sdist
-```
-
-A new folder `dist` will be created. The [`sdist_upip`](sdist_upip.py) will be
-used to create everything necessary.
-
-### Upload to PyPi
-
-**Be aware: [pypi.org][ref-pypi] and [test.pypi.org][ref-test-pypi] are different**
-
-You can **NOT** login to [test.pypi.org][ref-test-pypi] with the
-[pypi.org][ref-pypi] account unless you created the same on the other. See
-[invalid auth help page of **test** pypi][ref-invalid-auth-test-pypi]
-
-For testing purposes add `--repository testpypi` to
-upload it to [test.pypi.org][ref-test-pypi]
-
-```bash
-twine upload dist/micropython-package-template-*.tar.gz -u PYPI_USERNAME -p PYPI_PASSWORD
+# Print the date and time in ISO8601 format: 2023-04-18T21:14:22
+print("Today is {:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}".format(
+    ds1307.year, ds1307.month, ds1307.day,
+    ds1307.hour, ds1307.minute, ds1307.second))
 ```
 
 ## Contributing
@@ -231,7 +199,7 @@ package in a virtual environment
 nose2 --config tests/unittest.cfg
 
 # run only one specific tests
-nose2 tests.test_blink.TestBlink.test_flash_led
+nose2 tests.test_ds1307.TestDS1307.test_addr
 ```
 
 Generate the coverage files with
@@ -243,37 +211,17 @@ coverage html
 
 The coverage report is placed at `reports/coverage/html/index.html`
 
-## Steps after using this template
-
-In order to use this template for a new MicroPython package to following steps
-should be done and changes to these file being made
-
-| File | Changes | More details |
-| ---- | ------- | -------------|
-| `.coveragerc` | Path to `version.py` file | Omit version file from coverage |
-| `.coveragerc` | Path to `include` folder | Include the package folder for coverage |
-| `.github/workflows/release.yml` | Path to `version.py` file | Use package version file to set changelog based version |
-| `.github/workflows/test-release.yml` | Path to `version.py` file | Use package version file to set changelog based version |
-| `.github/workflows/test.yml` | Path to `version.py` file | Use package version file to set changelog based version |
-| `README.md` | Links in header section and installation instructions | |
-| `changelog.md` | Cleanup changelog from informations of template | Keep usage of SemVer |
-| `docs/DOCUMENTATION.md` | Kink to ReadTheDocs | |
-| `docs/conf.py` | List to modules to be mocked, package import, path to `version.py` file, update `author`, `project` and `linkcheck_ignore` | |
-| `docs/index.rst` | Header name and included modules | Replace `be_upy_blink` with new `.rst` file of new package |
-| `docs/NEW_MODULE_NAME.rst` | Create a new `.rst` file  named as the package | Use `docs/be_upy_blink.rst` as template |
-| `package.json` | Files and paths to new package and repo | Used by `mip` |
-| `setup.py` | Path to `version.py` file, `name`, `description`, `url`, `author`, `author_email`, `keywords`, `project_urls`, `packages`, `install_requires` | Used to create the package and its informations published at e.g. PyPI |
-
 ## Credits
 
-Based on the [PyPa sample project][ref-pypa-sample].
+Based on
+[Mike Causer's MicroPython TinyRTC I2C module][ref-micropython-tinyrtc-i2c]
+and the [PyPa sample project][ref-pypa-sample]
 
 <!-- Links -->
-[ref-rtd-micropython-package-template]: https://micropython-package-template.readthedocs.io/en/latest/
+[ref-rtd-micropython-ds1307]: https://micropython-ds1307.readthedocs.io/en/latest/
 [ref-remote-upy-shell]: https://github.com/dhylands/rshell
 [ref-brainelectronics-test-pypiserver]: https://github.com/brainelectronics/test-pypiserver
+[ref-micropython-tinyrtc-i2c]: https://github.com/mcauser/micropython-tinyrtc-i2c
 [ref-pypa-sample]: https://github.com/pypa/sampleproject
-[ref-pfalcon-picoweb-sdist-upip]: https://github.com/pfalcon/picoweb/blob/b74428ebdde97ed1795338c13a3bdf05d71366a0/sdist_upip.py
 [ref-test-pypi]: https://test.pypi.org/
 [ref-pypi]: https://pypi.org/
-[ref-invalid-auth-test-pypi]: https://test.pypi.org/help/#invalid-auth
