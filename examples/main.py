@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
-"""I2C EEPROM showcase"""
+"""I2C DS1307 showcase"""
 
-from eeprom import DS1307
+from ds1307 import DS1307
 from machine import I2C, Pin
 from time import gmtime, sleep, time
 
-I2C_ADDR = 0x68
+# DS1307 on 0x68
+I2C_ADDR = 0x68     # DEC 104, HEX 0x68
 
 # define custom I2C interface, default is 'I2C(0)'
 # check the docs of your device for further details and pin infos
 # this are the pins for the Raspberry Pi Pico adapter board
 i2c = I2C(0, scl=Pin(13), sda=Pin(12), freq=800000)
-ds1307 = DS1307(addr=I2C_ADDR, i2c=i2c)   # DS1307 on 0x68
+ds1307 = DS1307(addr=I2C_ADDR, i2c=i2c)
 
 # get LCD infos/properties
 print("DS1307 is on I2C address 0x{0:02x}".format(ds1307.addr))

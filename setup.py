@@ -16,7 +16,7 @@ exec(open(here / 'ds1307' / 'version.py').read())
 setup(
     name='micropython-ds1307',
     version=__version__,
-    description=" MicroPython driver for DS1307 RTC ",
+    description="MicroPython driver for DS1307 RTC",
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/brainelectronics/micropython-ds1307',
